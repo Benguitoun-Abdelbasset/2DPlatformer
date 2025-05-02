@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50x50 Color Grid</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(50, 10px);
+            grid-template-rows: repeat(50, 10px);
+            background-color: lightblue;
+            width: 500px; /* Fixed width: 50 cells × 10px */
+            height: 500px; /* Fixed height: 50 cells × 10px */
+            border: 1px solid #ccc;
+        }
+        .cell {
+            width: 10px;
+            height: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="grid"></div>
+    <script>
+        const width = 50;
+        const height = 50;
+        
+        // Helper function to generate coordinates between two points
+        function generateLine(x1, y1, x2, y2) {
+            const points = [];
+            
+            // Handle vertical line
+            if (x1 === x2) {
+                const startY = Math.min(y1, y2);
+                const endY = Math.max(y1, y2);
+                
+                for (let y = startY; y <= endY; y++) {
+                    points.push([x1, y]);
+                }
+                return points;
+            }
+            
+            // Handle horizontal line
+            if (y1 === y2) {
+                const startX = Math.min(x1, x2);
+                const endX = Math.max(x1, x2);
+                
+                for (let x = startX; x <= endX; x++) {
+                    points.push([x, y1]);
+                }
+                return points;
+            }
+            
+            // Handle diagonal line (using Bresenham's algorithm)
+            const dx = Math.abs(x2 - x1);
+            const dy = Math.abs(y2 - y1);
+            const sx = x1 < x2 ? 1 : -1;
+            const sy = y1 < y2 ? 1 : -1;
+            let err = dx - dy;
+            
+            let currentX = x1;
+            let currentY = y1;
+            
+            while (true) {
+                points.push([currentX, currentY]);
+                
+                if (currentX === x2 && currentY === y2) break;
+                
+                const e2 = 2 * err;
+                if (e2 > -dy) {
+                    err -= dy;
+                    currentX += sx;
+                }
+                if (e2 < dx) {
+                    err += dx;
+                    currentY += sy;
+                }
+            }
+            
+            return points;
+        }
+        
+        // Define sprites as arrays of [x,y] coordinates
+        const ground = [];
+        const grass = [];
+        let obstacles = [];
+        
+        // Add a line of obstacles from (20,20) to (20,30)
+        
+        obstacles = obstacles.concat(generateLine(0, 30, 20, 30));
+		
+		obstacles = obstacles.concat(generateLine(50, 20, 20, 20));
+		
+		obstacles = obstacles.concat(generateLine(15, 15, 0, 0));
+		
+console.log(obstacles);
+
+
+
+
+            
+        // Populate ground coordinates (bottom row)
+        for (let x = 0; x < width; x++) {
+            ground.push([x, 49]);
+        }
+        
+        // Populate grass coordinates (rows 41-48)
+        for (let y = 41; y < 49; y++) {
+            for (let x = 0; x < width; x++) {
+                grass.push([x, y]);
+            }
+        }
+        
+        // Create the grid
+        const grid = document.getElementById("grid");
+        
+        // Create all cells with default blue background
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.id = `cell-${x}-${y}`;
+                grid.appendChild(cell);
+            }
+        }
+        
+        // Function to set a cell's color at specific x,y coordinates
+        function setCell(x, y, color) {
+            const cell = document.getElementById(`cell-${x}-${y}`);
+            if (cell) {
+                cell.style.backgroundColor = color;
+            }
+        }
+        
+        // Render all sprites
+        ground.forEach(coord => {
+            setCell(coord[0], coord[1], "brown");
+        });
+        
+        grass.forEach(coord => {
+            setCell(coord[0], coord[1], "green");
+        });
+        
+        obstacles.forEach(coord => {
+            setCell(coord[0], coord[1], "gray");
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+i need levels for a 2d game
+the levels are in JSON format
+each level is 50 sprites width by 15 sprites height
+the bottom 3 sprites are reserved for ground
+there could be holes in the ground and only in the ground so their max height is 3
+the player starts at the left side so no holes there
+there is platforms that the player needs to be able to get on by jumping and he can jump over 3 sprites at max, platforms need to be at max 3 sprites above the ground or above another platform)
+enemies are one sprite that has to be either on a platform or on the ground
+one key is present and it's either on a platform or on the ground
+one exit door is present and it's either on a platform or on the ground near the far right of the level
+
+max hole width = 4
+max platform count = 5
+max enemy count = 3
+
+generate an array of 50 levels that follow this syntax and respect the mentioned rules
+
+Every time the prompt runs, the levels must be different from previous generations.
+
+The positioning of platforms, holes, enemies, key, and exit door must be varied.
+
+Use a mix of easy, medium, and hard levels.
+
+YOU SEEM TO BE MAKING THE SAME LEVELS OVER AND OVER I KNOW YOU ARE ABLE TO INTERNALIZE SOME RANDOM SEEDING MECHANISM SO SHOW ME YOU CAN
+
+[ {
+"platforms": [
+{ "x": 6, "y": 7, "length": 5 },
+{ "x": 19, "y": 7, "length": 6 },
+{ "x": 36, "y": 7, "length": 3 }
+],
+"holes": [
+{ "x": 17, "y": 3, "length": 4 }
+],
+"key": { "x": 22, "y": 8 },
+"enemies": [
+{ "x": 12, "y": 4 },
+{ "x": 32, "y": 4 }
+],
+"exitDoor": { "x": 48, "y": 4 },
+"difficulty": 3
+}]
