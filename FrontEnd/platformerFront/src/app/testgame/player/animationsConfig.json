@@ -1,0 +1,73 @@
+[
+    {
+      "generateFrames": true,
+      "animationName": "walk",
+      "framesConfig": {
+        "start": 10,
+        "end": 15
+      },
+      "frameRate": 10,
+      "repeat": -1
+    },
+    {
+      "generateFrames": true,
+      "animationName": "run",
+      "framesConfig": {
+        "start": 20,
+        "end": 27
+      },
+      "frameRate": 15,
+      "repeat": -1
+    },
+    {
+      "generateFrames": false,
+      "animationName": "idle",
+      "frames": [
+        {
+          "frame": 1
+        }
+      ],
+      "frameRate": 20
+    },
+    {
+      "generateFrames": false,
+      "animationName": "turn",
+      "frames": [
+        {
+          "frame": 0
+        }
+      ],
+      "frameRate": 20
+    },
+    {
+      "generateFrames": false,
+      "animationName": "jump",
+      "frames": [
+        {
+          "frame": 6
+        }
+      ],
+      "frameRate": 20
+    },
+    {
+      "generateFrames": false,
+      "animationName": "down",
+      "frames": [
+        {
+          "frame": 7
+        }
+      ],
+      "frameRate": 20
+    },
+    {
+      "generateFrames": false,
+      "animationName": "land",
+      "frames": [
+        {
+          "frame": 8
+        }
+      ],
+      "frameRate": 20
+    }
+  ]
+  
