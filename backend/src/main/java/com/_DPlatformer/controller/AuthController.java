@@ -2,6 +2,7 @@ package com._DPlatformer.controller;
 
 
 import com._DPlatformer.dto.AuthRequest;
+import com._DPlatformer.exception.UserAlreadyExistsException;
 import com._DPlatformer.security.JwtUtil;
 import com._DPlatformer.service.AppUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -49,10 +53,24 @@ public class AuthController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
             String token = jwtUtil.generateToken(userDetails.getUsername());
 
-            return ResponseEntity.ok(Collections.singletonMap("token", token));
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("username", userDetails.getUsername());
 
-        } catch (BadCredentialsException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+            return ResponseEntity.ok(response);
+
+        } catch (BadCredentialsException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        } catch (AuthenticationException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Authentication failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -60,10 +78,22 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest request) {
+        try {
+            appUserService.registerUser(request);
 
-        appUserService.registerUser(request);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "User registered successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-        return ResponseEntity.ok("User registered successfully");
+        } catch (UserAlreadyExistsException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Registration failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
     }
 
 

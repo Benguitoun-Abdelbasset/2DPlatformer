@@ -2,6 +2,7 @@ package com._DPlatformer.service;
 
 
 import com._DPlatformer.dto.AuthRequest;
+import com._DPlatformer.exception.UserAlreadyExistsException;
 import com._DPlatformer.model.AppUser;
 import com._DPlatformer.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class AppUserService {
     public void registerUser(AuthRequest request){
 
         if (getByUsername(request.getUsername()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username already exists");
+            throw new UserAlreadyExistsException("Username '" + request.getUsername() + "' is already taken");
         }
 
         AppUser user = new AppUser();
