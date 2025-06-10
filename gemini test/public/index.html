@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gemini Test</title>
+</head>
+<body>
+  <h1>Ask Gemini</h1>
+  <input id="prompt" placeholder="Enter your prompt" />
+  <button onclick="askGemini()">Send</button>
+  <pre id="response"></pre>
+
+  <script>
+    async function askGemini() {
+      const prompt = document.getElementById("prompt").value;
+      const res = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      document.getElementById("response").textContent = data.response || data.error;
+    }
+  </script>
+</body>
+</html>

@@ -52,12 +52,10 @@ function preload() {
 
 async function create() {
 
+    //  const level = await callGPT();
 
-
-
-
-
-    const level = await callGPT();
+    const Tlevel = await callRemoteGemini();
+    level = JSON.parse(Tlevel);
     console.log(JSON.stringify(level));
 
 
@@ -97,7 +95,7 @@ async function create() {
             // Calculate pixel position of each tile
             const tileX = ((platform.x) + i) * 32 + 16; // +16 centers the tile (if origin is center)
             const tileY = (15 - platform.y) * 32 + 16;
-            
+
 
             platforms.create(tileX, tileY, 'platform')
                 .setDisplaySize(32, 32)
@@ -282,9 +280,9 @@ function reachDoor(player, door) {
         player.setVelocity(0, 0);
         gameText.setText('You won! Congratulations!');
         this.add.text(1200, 300, 'You Win!', {
-        fontSize: '48px',
-        fill: '#ffffff'
-    }).setOrigin(0.5);
+            fontSize: '48px',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
     } else {
         gameText.setText('You need the key to open the door!');
     }
@@ -340,6 +338,23 @@ function checkFallInHole(player, enemiesGroup) {
             // Optional: you can add score or feedback here
         }
     });
+}
+
+
+
+async function callRemoteGemini() {
+    const message = "gimme level"
+
+    const response = await fetch("http://localhost:3000/api/echo", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+    });
+
+    const data = await response.json();
+    return(data.reply);
 }
 
 
@@ -414,9 +429,6 @@ Example format:
     } catch (error) {
         console.error('Failed to fetch level data:', error);
     }
-
-
-
 
 }
 

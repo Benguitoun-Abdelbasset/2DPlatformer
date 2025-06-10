@@ -1,0 +1,16 @@
+{
+  "name": "gemini-api-demo",
+  "version": "1.0.0",
+  "description": "Simple web app using Google Gemini API via Node.js backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.4.0",
+    "@google/generative-ai": "^0.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
