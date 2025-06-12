@@ -1,5 +1,6 @@
 package com.platformer.game.controller;
 
+import com.platformer.game.model.User;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.platformer.game.service.LevelService;          // Adjust to your actual package
 import com.platformer.game.service.ScoreService;          // Adjust to your actual package
 import com.platformer.game.repository.UserRepository;    // Adjust to your actual package
+
+import java.security.Principal;
+import java.util.Optional;
 
 
 @RestController
@@ -37,6 +41,7 @@ public class GameController {
             @RequestParam String levelId) {
         return ResponseEntity.ok(scoreService.saveScore(username, score, levelId));
     }
+
 
     @GetMapping("/user/{username}")
     public ResponseEntity<?> getUserData(@PathVariable String username) {

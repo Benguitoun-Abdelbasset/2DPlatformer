@@ -1,0 +1,54 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+  <div class="text-center space-y-6 w-full max-w-md p-8 bg-white bg-opacity-95 rounded-2xl shadow-xl">
+    <h1 class="text-4xl font-bold text-indigo-600">Login to 2DPlatformer</h1>
+    <p class="text-lg text-gray-600">Access your account and continue learning</p>
+
+    <div *ngIf="errorMessage" class="text-red-500 text-sm text-center">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div>
+        <input 
+          type="text"  
+          formControlName="username"  
+          class="w-full px-4 py-2 rounded-xl bg-gray-100 text-indigo-600 font-semibold shadow focus:outline-none focus:ring-2 focus:ring-purple-500"
+          placeholder="Username"  
+          [class.border-red-500]="submitted && f['username'].errors"
+        >
+        <div *ngIf="submitted && f['username'].errors" class="text-red-500 text-sm mt-1 text-left">
+          <div *ngIf="f['username'].errors['required']">Username is required</div>
+        </div>
+      </div>
+      <div>
+        <input 
+          type="password" 
+          formControlName="password"
+          class="w-full px-4 py-2 rounded-xl bg-gray-100 text-indigo-600 font-semibold shadow focus:outline-none focus:ring-2 focus:ring-purple-500"
+          placeholder="Password"
+          [class.border-red-500]="submitted && f['password'].errors"
+        >
+        <div *ngIf="submitted && f['password'].errors" class="text-red-500 text-sm mt-1 text-left">
+          <div *ngIf="f['password'].errors['required']">Password is required</div>
+          <div *ngIf="f['password'].errors['minlength']">Password must be at least 6 characters</div>
+        </div>
+      </div>
+      <div class="space-x-4">
+        <button 
+          type="submit"
+          class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-indigo-700 transition cursor-pointer"
+        >
+          Login
+        </button>
+        <a routerLink="/signup">
+          <button 
+            type="button"
+            class="bg-purple-600 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-purple-700 transition cursor-pointer"
+          >
+            Sign Up
+          </button>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

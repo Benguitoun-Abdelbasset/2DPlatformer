@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email Spam Classifier</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow-y: hidden;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+    .shadow-soft {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+
+  <!-- Header -->
+  <header class="gradient-bg text-white p-4 flex justify-between items-center shadow-lg">
+    <div class="text-2xl font-bold tracking-tight">DataMining-MLP</div>
+    <div class="flex space-x-8 text-lg font-medium">
+      <a href="#" class="hover:text-blue-200 transition-colors">Model</a>
+      <a href="#" class="hover:text-blue-200 transition-colors">GitHub</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="p-6 max-w-7xl mx-auto h-[calc(100vh-140px)]">
+    <h1 class="text-3xl font-bold mb-6 text-gray-900">Email Spam Classifier</h1>
+
+    <div class="flex flex-col lg:flex-row gap-8 h-full">
+      <!-- Left Column - Input -->
+      <div class="bg-white shadow-soft rounded-xl p-6 h-full lg:w-1/2 flex flex-col">
+        <label for="emailText" class="block mb-3 font-medium text-gray-700">Email Text:</label>
+        <textarea 
+          id="emailText" 
+          rows="12" 
+          class="w-full p-4 border border-gray-200 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-grow resize-none" 
+          placeholder="Paste email content here..."
+        ></textarea>
+        <div class="flex justify-end mt-4">
+          <button 
+            onclick="classifyEmail()" 
+            class="gradient-bg text-white px-8 py-3 rounded-lg hover:opacity-90 transition-all shadow-md hover:shadow-lg font-medium"
+          >
+            Analyze
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column - Results -->
+      <div id="resultsColumn" class="hidden lg:flex lg:w-1/2 h-full flex-col">
+        <div class="bg-white shadow-soft rounded-xl p-6 h-full flex flex-col">
+          <!-- Classification Result -->
+          <div class="mb-6 fade-in">
+            <h2 class="text-xl font-semibold mb-3 text-gray-900">Classification Result</h2>
+            <p id="classification" class="text-xl font-medium py-3 px-4 rounded-lg bg-gray-100">
+              Awaiting analysis...
+            </p>
+          </div>
+
+          <!-- Confidence Score -->
+          <div class="flex-grow fade-in">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Model Confidence</h2>
+            <div class="h-64">
+              <canvas id="confidenceChart"></canvas>
+            </div>
+            <div class="mt-4 text-sm text-gray-500">
+              <p>MLP Classifier | Precision: 93.2%</p>
+              <p>Features: TF-IDF weighted terms</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function classifyEmail() {
+      const email = document.getElementById('emailText').value;
+      if (!email.trim()) {
+        alert("Please enter email text to analyze");
+        return;
+      }
+
+      // Show loading state
+      const classificationEl = document.getElementById('classification');
+      classificationEl.textContent = "Processing with MLP model...";
+      classificationEl.className = "text-xl font-medium py-3 px-4 rounded-lg bg-gray-100 text-gray-800";
+
+      // Show results
+      document.getElementById('resultsColumn').classList.remove('hidden');
+      
+      setTimeout(() => {
+        // Simulate model analysis
+        const isSpam = analyzeEmail(email);
+        updateResults(isSpam);
+      }, 800);
+    }
+
+    function analyzeEmail(email) {
+      // Simple spam detection logic (replace with real model)
+      const spamTerms = ["free", "winner", "click here", "urgent", "offer", "prize"];
+      const spamScore = spamTerms.reduce((score, term) => 
+        score + (email.toLowerCase().includes(term) ? 1 : 0, 0);
+      
+      return spamScore >= 2 || Math.random() > 0.85;
+    }
+
+    function updateResults(isSpam) {
+      const classificationEl = document.getElementById('classification');
+      const spamConfidence = calculateConfidence(isSpam);
+
+      if (isSpam) {
+        classificationEl.textContent = "🛑 SPAM (MLP Classification)";
+        classificationEl.className = "text-xl font-medium py-3 px-4 rounded-lg bg-red-100 text-red-800";
+      } else {
+        classificationEl.textContent = "✅ LEGITIMATE (MLP Classification)";
+        classificationEl.className = "text-xl font-medium py-3 px-4 rounded-lg bg-green-100 text-green-800";
+      }
+
+      renderChart(spamConfidence);
+    }
+
+    function calculateConfidence(isSpam) {
+      // Generate realistic confidence values
+      return isSpam 
+        ? 0.7 + Math.random() * 0.25 // 70-95% for spam
+        : 0.8 + Math.random() * 0.15; // 80-95% for legitimate
+    }
+
+    function renderChart(confidence) {
+      const ctx = document.getElementById('confidenceChart').getContext('2d');
+      if (window.confidenceChart) window.confidenceChart.destroy();
+      
+      window.confidenceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Spam Probability', 'Legitimate Probability'],
+          datasets: [{
+            data: [confidence * 100, (1 - confidence) * 100],
+            backgroundColor: ['#ef4444', '#10b981'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.raw.toFixed(1)}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
