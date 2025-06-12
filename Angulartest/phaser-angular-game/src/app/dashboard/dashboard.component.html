@@ -1,0 +1,37 @@
+<div class="min-h-screen flex flex-col bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+  <!-- Header -->
+  <header class="bg-white bg-opacity-95 shadow-xl px-6 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-indigo-600">2DPlatformer</h1>
+    <button 
+      (click)="logout()"
+      class="bg-purple-600 text-white px-4 py-2 rounded-xl font-semibold shadow hover:bg-purple-700 transition cursor-pointer"
+    >
+      Logout
+    </button>
+  </header>
+
+  <!-- Main Content with Sidebar -->
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white bg-opacity-95 shadow-xl p-6 space-y-6">
+      <h2 class="text-xl font-bold text-indigo-600">Player Profile</h2>
+      <div *ngIf="user; else loading" class="space-y-4">
+        <div>
+          <p class="text-gray-600 font-semibold">Username</p>
+          <p class="text-indigo-600">{{ user?.username }}</p>
+        </div>
+      </div>
+      <ng-template #loading>
+        <p class="text-gray-600">Loading player data...</p>
+      </ng-template>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-8">
+      <div class="bg-white bg-opacity-95 rounded-2xl shadow-xl p-6">
+        <h2 class="text-2xl font-bold text-indigo-600 mb-4">Dashboard</h2>
+        <p class="text-gray-600">Welcome, {{ user?.username || 'Player' }}! This is your dashboard for 2DPlatformer.</p>
+      </div>
+    </main>
+  </div>
+</div>
