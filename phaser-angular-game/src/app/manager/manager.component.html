@@ -1,0 +1,71 @@
+<div class="min-h-screen flex flex-col bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-4">
+  <h2 class="text-2xl font-bold mb-4">Choose a Level</h2>
+  <div *ngIf="isLoading" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+    <div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+  </div>
+  <!-- Game shows here -->
+  <div class="mb-6">
+    <app-game *ngIf="!isLoading && inputlevel" [inputlevel]="inputlevel"
+      (levelFinished)="onChildFinished($event)"></app-game>
+  </div>
+  <div *ngIf="!isLoading && !inputlevel"
+    class="min-h-screen flex flex-col bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-4">
+    <!-- Difficulty slider + buttons -->
+    <div class="flex flex-col md:flex-row items-center gap-3 mb-4">
+      <label class="text-white font-medium">Difficulty: {{ selectedDifficulty }}</label>
+      <input type="range" min="1" max="5" [value]="selectedDifficulty" (input)="onSliderChange($event)"
+        class="w-full md:w-64 accent-white" />
+      <button (click)="generateLevel()"
+        class="px-4 py-2 bg-white text-indigo-700 rounded-full font-semibold hover:bg-indigo-100 transition">
+        Generate Level
+      </button>
+      <button (click)="loadNextLevel()"
+        class="px-4 py-2 bg-white text-indigo-700 rounded-full font-semibold hover:bg-indigo-100 transition"
+        [disabled]="!currentLevelIndex && currentLevelIndex === userLevels.length - 1">
+        Next Level
+      </button>
+    </div>
+
+    <!-- No level history message -->
+    <div *ngIf="userLevels.length === 0" class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <p class="text-xl text-white opacity-75">No level history yet</p>
+        <p class="text-sm text-white opacity-60 mt-2">Generate your first level to get started!</p>
+      </div>
+    </div>
+
+    <!-- Level Cards Grid -->
+    <div *ngIf="userLevels.length > 0"
+      class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3 overflow-y-auto max-h-[80vh] pr-1">
+
+      <div *ngFor="let userLevel of userLevels; let i = index"
+        class="group relative aspect-[4/5] rounded-xl shadow-lg overflow-hidden hover:scale-[1.02] transition-transform"
+        [ngClass]="[
+       i % 8 === 0 ? 'bg-gray-300/80' :
+       i % 8 === 1 ? 'bg-sky-300/60' :
+       i % 8 === 2 ? 'bg-emerald-200/60' :
+       i % 8 === 3 ? 'bg-yellow-200/60' :
+       i % 8 === 4 ? 'bg-orange-200/60' :
+       i % 8 === 5 ? 'bg-teal-200/60' :
+       i % 8 === 6 ? 'bg-rose-200/60' :
+       'bg-stone-200/30'
+     ]">
+
+
+      <!-- Content overlay -->
+      <div class="relative z-10 w-full h-full flex flex-col justify-between p-4 transition-all duration-300">
+        <div class="text-center">
+          <h3 class="text-lg font-bold text-black mb-1">Level {{ userLevel.displayId }}</h3>
+          <p class="text-sm text-black font-medium">Difficulty: {{ userLevel.leveldata.difficulty }}</p>
+          <p class="text-sm text-black font-medium">Best Score: {{ userLevel.bestScore }}</p>
+          <p class="text-sm text-black font-medium">Attempts: {{ userLevel.attempts }}</p>
+        </div>
+        <button (click)="loadLevel(userLevel)"
+          class="w-full py-3 bg-white bg-opacity-95 text-indigo-700 text-base font-bold rounded-full hover:bg-opacity-100 hover:scale-105 transition-all duration-200 shadow-lg border-2 border-white border-opacity-50">
+          Play
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

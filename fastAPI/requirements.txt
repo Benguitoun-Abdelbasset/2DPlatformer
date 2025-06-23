@@ -1,0 +1,4 @@
+fastapi==0.115.12 # Or your specific FastAPI version
+uvicorn==0.34.3 # Or your specific Uvicorn version
+google-genai # Add this line
+# Add any other Python dependencies your FastAPI app uses

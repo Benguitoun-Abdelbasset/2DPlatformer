@@ -37,6 +37,7 @@ public class GameController {
             @RequestParam String username,
             @RequestParam double score,
             @RequestParam String levelId) {
+        System.out.println("trying to save score");
         return ResponseEntity.ok(scoreService.saveScore(username, score, levelId));
     }
 
@@ -64,9 +65,7 @@ public class GameController {
     public ResponseEntity<List<Level>> getUserLevels(@PathVariable String username) {
         try {
             List<Level> levels = scoreService.getLevelsByUsername(username);
-            if (levels.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
+
             return ResponseEntity.ok(levels);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

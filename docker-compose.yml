@@ -1,0 +1,70 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: gamedb
+    networks:
+      - game-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb-restore:
+    image: mongo:latest
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./mongodb_dump:/dump
+    command: bash -c "sleep 30 && mongorestore --host mongodb:27017 --drop --db gamedb /dump/gamedb"
+    networks:
+      - game-net
+    restart: "no"
+
+
+  backend:
+    build:
+      context: ./gameBE
+    container_name: springboot-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    networks:
+      - game-net
+
+  fastapi:
+    build:
+      context: ./fastAPI
+    container_name: fastapi-service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    networks:
+      - game-net
+
+  frontend:
+    build:
+      context: ./phaser-angular-game
+    container_name: angular-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+      - fastapi
+    networks:
+      - game-net
+
+networks:
+  game-net:
+
+volumes:
+  mongo_data:
