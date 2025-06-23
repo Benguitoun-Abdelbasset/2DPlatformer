@@ -1,8 +1,7 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
 import Phaser from 'phaser';
-import { HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-
 
 interface Platform {
   x: number;
@@ -45,7 +44,6 @@ interface Pos {
   y: number;
 }
 
-
 @Component({
   selector: 'app-game',
   standalone: true,
@@ -61,6 +59,28 @@ interface Pos {
 })
 export class GameComponent implements AfterViewInit {
   private game!: Phaser.Game;
+  @Input() inputlevel = {
+    platforms: [
+      { x: 8, y: 5, length: 3 },
+      { x: 16, y: 9, length: 2 },
+      { x: 25, y: 7, length: 4 },
+      { x: 34, y: 11, length: 3 }
+    ],
+    holes: [
+      { x: 12, y: 1, length: 2 },
+      { x: 22, y: 1, length: 3 },
+      { x: 45, y: 1, length: 2 }
+    ],
+    key: { x: 10, y: 9 },
+    enemies: [
+      { x: 10, y: 3 },
+      { x: 27, y: 7 },
+      { x: 40, y: 4 }
+    ],
+    exitDoor: { x: 48, y: 3 },
+    difficulty: 3
+  };
+  @Output() levelFinished = new EventEmitter<{ score: number; status: string }>();
 
   constructor(private http: HttpClient) { }
 
@@ -77,7 +97,7 @@ export class GameComponent implements AfterViewInit {
         }
       },
       parent: 'phaser-game',
-      scene: new GameScene(this.http)
+      scene: new GameScene(this.http, this.inputlevel, this.levelFinished)
     };
 
     this.game = new Phaser.Game(config);
@@ -92,10 +112,18 @@ class GameScene extends Phaser.Scene {
   private door!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private gameText!: Phaser.GameObjects.Text;
+  private scoreText!: Phaser.GameObjects.Text;
+  private replayButton!: Phaser.GameObjects.Sprite;
+  private replayText!: Phaser.GameObjects.Text;
   private gameOver: boolean = false;
   private hasKey: boolean = false;
+  private startTime!: number;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private inputlevel: any,
+    private levelFinished: EventEmitter<{ score: number; status: string }>
+  ) {
     super({ key: 'GameScene' });
   }
 
@@ -105,6 +133,7 @@ class GameScene extends Phaser.Scene {
     this.load.image('platform', 'assets/platform.png');
     this.load.image('key', 'assets/key.png');
     this.load.image('door', 'assets/door.png');
+    this.load.image('replay', 'assets/replay.png');
     this.load.spritesheet('dude', 'https://labs.phaser.io/assets/sprites/dude.png', {
       frameWidth: 32,
       frameHeight: 48
@@ -116,8 +145,8 @@ class GameScene extends Phaser.Scene {
   }
 
   async create() {
-    //const level = await this.callRemoteGemini();
-    const level=this.getMockLevel();
+    this.startTime = this.time.now;
+    const level = this.inputlevel;
     console.log(JSON.stringify(level));
 
     const holes = level.holes;
@@ -215,6 +244,23 @@ class GameScene extends Phaser.Scene {
       color: '#fff'
     }).setScrollFactor(0);
 
+    this.scoreText = this.add.text(16, 40, 'Score: 10000', {
+      fontSize: '18px',
+      color: '#fff'
+    }).setScrollFactor(0);
+
+    this.replayButton = this.add.sprite(500, 300, 'replay').setScale(0.5).setVisible(false).setInteractive();
+    this.replayText = this.add.text(500, 300, 'Replay', {
+      fontSize: '24px',
+      color: '#fff'
+    }).setOrigin(0.5).setVisible(false);
+
+    this.replayButton.on('pointerdown', () => {
+      this.gameOver = false;
+      this.hasKey = false;
+      this.scene.restart();
+    });
+
     const tileSize = 32;
     const widthInTiles = 50;
     const heightInTiles = 15;
@@ -236,6 +282,10 @@ class GameScene extends Phaser.Scene {
       if (this.gameOver) return;
 
       this.checkFallInHole();
+
+      const elapsedTime = (this.time.now - this.startTime) / 1000;
+      const score = Math.max(0, 10000 - Math.floor(elapsedTime * 100));
+      this.scoreText.setText(`Score: ${score}`);
 
       if (this.cursors.left.isDown) {
         this.player.setVelocityX(-160);
@@ -265,33 +315,31 @@ class GameScene extends Phaser.Scene {
         }
         return null;
       });
-
-
     } catch (error) {
       console.error('Error in update', error);
     }
   }
 
-
-  private collectKey(
-    player: any,
-     key: any
-  ) {
+  private collectKey(player: any, key: any) {
     key.disableBody(true, true);
     this.hasKey = true;
     this.gameText.setText('You got the key! Now reach the door!');
-
   }
 
   private reachDoor(player: any, door: any) {
     if (this.hasKey) {
       this.gameOver = true;
-      player.setVelocity(0, '');
+      player.setVelocity(0, 0);
       this.gameText.setText('You won! Congratulations!');
       this.add.text(1200, 300, 'You Win!', {
         fontSize: '48px',
         color: '#ffffff'
       }).setOrigin(0.5);
+
+      const endTime = this.time.now;
+      const timeTaken = (endTime - this.startTime) / 1000;
+      const score = Math.max(0, 10000 - Math.floor(timeTaken * 100));
+      this.levelFinished.emit({ score, status: 'win' });
     } else {
       this.gameText.setText('You need the key to open the door!');
     }
@@ -307,12 +355,9 @@ class GameScene extends Phaser.Scene {
       player.setTint(0xff0000);
       player.anims.play('turn');
       this.gameOver = true;
-      this.gameText.setText('Game Over! Click to restart');
-      this.input.once('pointerdown', () => {
-        this.gameOver = false;
-        this.hasKey = false;
-        this.scene.restart();
-      });
+      this.gameText.setText('Game Over! Press Replay to restart');
+      this.replayButton.setVisible(true);
+      this.replayText.setVisible(true);
     }
   }
 
@@ -323,93 +368,21 @@ class GameScene extends Phaser.Scene {
       this.player.setTint(0xff0000);
       this.player.anims.play('turn');
       this.gameOver = true;
-      this.gameText.setText('You fell in a hole! Game Over! Click to restart');
-      this.input.once('pointerdown', () => {
-        this.gameOver = false;
-        this.hasKey = false;
-        this.scene.restart();
-      });
+      this.gameText.setText('You fell in a hole! Press Replay to restart');
+      this.replayButton.setVisible(true);
+      this.replayText.setVisible(true);
     }
-   this.enemies.children.iterate((enemyGameObject: Phaser.GameObjects.GameObject) => {
-
-  if (!(enemyGameObject instanceof Phaser.Physics.Arcade.Sprite) || !enemyGameObject.body) {
-
-    return null;
+    this.enemies.children.iterate((enemyGameObject: Phaser.GameObjects.GameObject) => {
+      if (!(enemyGameObject instanceof Phaser.Physics.Arcade.Sprite) || !enemyGameObject.body) {
+        return null;
+      }
+      const enemy = enemyGameObject as Phaser.Physics.Arcade.Sprite;
+      if (enemy.y > holeYLimit) {
+        enemy.disableBody(true, true);
+      }
+      return null;
+    });
   }
-
-  const enemy = enemyGameObject as Phaser.Physics.Arcade.Sprite;
-
-  if (enemy.y > holeYLimit) {
-    enemy.disableBody(true, true);
-  }
-
-  return null;
-});
-  }
-
-
-  // private async callRemoteGemini(): Promise<any> {
-  //   const response = await lastValueFrom(
-  //     this.http.post<{ reply: string }>('http://localhost:5000/api/echo', { message: 'gimme level' })
-  //   );
-  //   const data = await response.json();
-  //   return JSON.parse(data.reply);
-  // };
-
-  // private async callGPT(): Promise<any> {
-  //   const prompt = `Generate a JSON object representing a level for a 2D platformer game with these properties:
-
-  //   - Level size: 50 tiles wide, 15 tiles high.
-  //   - Bottom 3 tiles (y=1 to y=3) are ground.
-  //   - Holes only in ground, up to 4 tiles wide, avoid holes near player start (x=0 to x=4).
-  //   - Platforms between y=4 and y=12, not overlapping ground, reachable by player (max 4 tiles jump height and distance).
-  //   - Platforms spread across level; some clustering allowed for challenge.
-  //   - Between 2 and 6 platforms.
-  //   - Between 0 and 3 holes.
-  //   - Player starts at x=0, so no holes or enemies near there.
-  //   - Place a 'key', 'exitDoor', and up to 4 'enemies' on ground or platforms, not floating.
-  //   - Enemies spaced out.
-  //   - Exit door near right edge (x > 40).
-  //   - Difficulty: integer 1 (easy) to 5 (hard).
-  //   - for the platforms you seem to be making them too long
-  //   VERY IMPORTANT: Imagine the player jumping through the platforms.
-
-  //   Each generated level should be unique, creative, and varied in layout, avoiding repetitive patterns.
-
-  //   Return only the JSON object without explanation or extra text.
-
-  //   Example format:
-
-  //   {
-  //     "platforms": [
-  //       { "x": 6, "y": 6, "length": 5 },
-  //       { "x": 20, "y": 8, "length": 4 },
-  //       { "x": 35, "y": 7, "length": 3 }
-  //     ],
-  //     "holes": [
-  //       { "x": 15, "y": 0, "length": 3 }
-  //     ],
-  //     "key": { "x": 36, "y": 8 },
-  //     "enemies": [
-  //       { "x": 10, "y": 3 },
-  //       { "x": 25, "y": 9 }
-  //     ],
-  //     "exitDoor": { "x": 47, "y": 3 },
-  //     "difficulty": 3
-  //   }
-  //   `;
-  //   try {
-  //     const apiKey = '64e6c1d9457626a89e2d1eeea04ff27f';
-  //     const model = 'gpt-3.5-turbo';
-  //     const temperature = 0.85;
-  //     const apiUrl = `http://195.179.229.119/gpt/api.php?prompt=${encodeURIComponent(prompt)}&api_key=${apiKey}&model=${model}&temperature=${temperature}`;
-  //     const response = await lastValueFrom(this.http.get<{ content: string }>(apiUrl));
-  //     return JSON.parse(response.content);
-  //   } catch (error) {
-  //     console.error('Failed to fetch level from GPT:', error);
-  //     return this.getMockLevel();
-  //   }
-  // }
 
   private getMockLevel() {
     return {

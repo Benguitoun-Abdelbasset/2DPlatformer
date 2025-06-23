@@ -5,17 +5,14 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import com.platformer.game.service.LevelService;          // Adjust to your actual package
 import com.platformer.game.service.ScoreService;          // Adjust to your actual package
 import com.platformer.game.repository.UserRepository;    // Adjust to your actual package
-
+import com.platformer.game.model.Level;
+import java.util.List;
 import java.security.Principal;
 import java.util.Optional;
 
@@ -30,8 +27,9 @@ public class GameController {
     private final UserRepository userRepository;
 
     @PostMapping("/generate-level")
-    public ResponseEntity<?> generateLevel(@RequestParam String difficulty) {
-        return ResponseEntity.ok(levelService.generateAndSaveLevel(difficulty));
+    public ResponseEntity<?> generateLevel(@RequestBody Map<String, Object> data) {
+        System.out.println(data+"////////////////////////////////////");
+        return ResponseEntity.ok(levelService.generateAndSaveLevel(data));
     }
 
     @PostMapping("/save-score")
@@ -60,5 +58,18 @@ public class GameController {
         return levelService.getLevelById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/levels/{username}")
+    public ResponseEntity<List<Level>> getUserLevels(@PathVariable String username) {
+        try {
+            List<Level> levels = scoreService.getLevelsByUsername(username);
+            if (levels.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(levels);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

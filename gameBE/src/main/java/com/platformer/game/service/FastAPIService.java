@@ -19,7 +19,7 @@ public class FastAPIService {
 
     public Map<String, Object> callFastAPITest() {
         return webClient.get()
-                .uri("/test")
+                .uri("/api/level")
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block(); // Use .subscribe() for reactive approach
