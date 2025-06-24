@@ -1,17 +1,21 @@
 package com.platformer.game.controller;
 
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 @RestController
 @RequestMapping("/fastapi")
 public class FastAPIController {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String FASTAPI_BASE_URL = "http://localhost:8000";
+    private final String FASTAPI_BASE_URL = "http://fastapi-service:8000";
 
     // Optional GET test
     @GetMapping("/test-fastapi")

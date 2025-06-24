@@ -1,15 +1,15 @@
 package com.platformer.game.service;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Map;
 
 @Service
 public class FastAPIService {
 
     private final WebClient webClient;
-    private final String FASTAPI_BASE_URL = "http://localhost:8000";
+    private final String FASTAPI_BASE_URL = "http://fastapi-service:8000";
 
     public FastAPIService() {
         this.webClient = WebClient.builder()

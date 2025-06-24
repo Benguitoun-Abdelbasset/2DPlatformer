@@ -1,19 +1,17 @@
 package com.platformer.game.service;
 
-import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.HashMap;
-import com.platformer.game.model.Level;              // Replace with your actual package
-import com.platformer.game.repository.LevelRepository; // Replace with your actual package
-import com.platformer.game.model.Score;
-import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.platformer.game.model.Level;
+import com.platformer.game.repository.LevelRepository;
+
+import lombok.RequiredArgsConstructor;              // Replace with your actual package
 @Service
 @RequiredArgsConstructor
 public class LevelService {
@@ -22,7 +20,7 @@ public class LevelService {
     private final RestTemplate restTemplate;
 
     public Level generateAndSaveLevel(Map<String, Object> data) {
-        String fastApiUrl = "http://localhost:8000/api/level"; // FastAPI endpoint
+        String fastApiUrl = "http://fastapi-service:8000/api/level"; // FastAPI endpoint
 
         try {
             // Send POST request directly to FastAPI
